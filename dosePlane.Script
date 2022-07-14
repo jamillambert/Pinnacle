@@ -1,0 +1,23 @@
+// This script creates a dose plane at the depth of every POI in the plan except for 
+// the WaterSurface POI and any POI aa depth shallower than the specified minimum depth below
+//
+//  Jamil Lambert Sept 2017
+//  Requires:
+//      "dosePlane.subScript";
+//      "WaterSurface" POI at the phantom surface on the beam axis
+
+//  Dose plane subscript must be in the location specified below.
+Store.StringAt.tempDosePlaneScript = "/home/jlambert/Scripts/QAplan/dosePlane.subScript";
+Store.StringAt.POIname = "WaterSurface";
+Store.FloatAt.tempMinDepth = 2; //cm minimum measurement depth, shallower depths are not exported
+
+IF.PoiList.#"!ContainsObject".WaterSurface.THEN.WarningMessage = "No WaterSurface POI. Place a POI on the phantom surface called \"WaterSurface\" and run the script again."; 
+//Else
+IF.PoiList.ContainsObject.WaterSurface.THEN ={
+	TrialList.Current.ComputeUncomputedBeams = 1;
+	TrialList.Current.BeamList.ChildrenEachCurrent.#"@".PoiList.ChildrenEachCurrent.#"@".IF.PoiList.Current.Name.STRINGNOTEQUALTO.Store.At.POIname.String.THEN.Script.ExecuteNow = Store.At.tempDosePlaneScript.String;
+};
+
+Store.FreeAt.POIname = "";
+Store.FreeAt.tempDosePlaneScript = "";
+Store.FreeAt.tempMinDepth = "";

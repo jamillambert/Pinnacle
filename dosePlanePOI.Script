@@ -1,0 +1,38 @@
+// A dose plane at the current POI is created for the current beam
+// Files are store as 'beamName'_'depth'_cm_depth.csv for ascii and .img for binary
+//
+
+Store.FloatAt.tempSPD = 230;
+Store.At.tempSPD.Add = PoiList.#"WaterSurface".CurrYCoord; //SAD + y coordinate of the water surface.
+Store.At.tempSPD.Subtract = PoiList.Current.CurrYCoord;  //SPD of the dose plane
+
+Store.FloatAt.tempDepth = PoiList.#"WaterSurface".CurrYCoord;  
+Store.At.tempDepth.Subtract = PoiList.Current.CurrYCoord; //Depth of the dose plane is the y value of the surface - y value of the POI
+
+
+Store.StringAt.tempFileName = ""; 
+Store.FloatAt.tempYes = 1;
+Store.At.tempFileName.AppendString = TrialList.Current.BeamList.Current.Name;
+Store.At.tempFileName.AppendString = Store.At.tempDepth.Value;
+Store.At.tempFileName.AppendString = "cm_depth";
+TrialList .Current .ExportPlanarDoseAscii = 1;
+Store.At.tempFileName.AppendString = ".csv";
+
+Test.ExpectAskYesNo = 1;
+Test.ExpectedAskYesNoReply = 1;
+TrialList.Current.AddPlanarDose = "";
+TrialList.Current.PlanarDoseList.Last.MakeCurrent = "";
+TrialList.Current.PlanarDoseList.Current.SetDataType = "Primary data";
+TrialList.Current.PlanarDoseList.Current.SetDoseType = "Compute beam";
+TrialList.Current.PlanarDoseList.Current.SetDoseType = "Sample trial";
+TrialList.Current.PlanarDoseList.Current.VoxelSize = 0.1;
+TrialList.Current.PlanarDoseList.Current.SourceToPlaneDistance = Store.At.tempSPD.Value;
+TrialList.Current.ComputePlanarDose = TrialList.Current.PlanarDoseList.Current.Address;
+TrialList.Current.PlanarDoseList.Current.ExportName = Store.At.tempFileName.String;
+TrialList.Current.OutputCurrentPlanarDose = "";
+
+
+Store.FreeAt.tempSPD = "";
+Store.FreeAt.tempFileName = "";
+Store.FreeAt.tempDepth = "";
+Store.FreeAt.tempYes = "";
