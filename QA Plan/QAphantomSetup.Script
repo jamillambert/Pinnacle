@@ -1,0 +1,84 @@
+// Setup script to run after a QA plan is created.
+// - Deletes the couch contours and removes any density overrides
+// - Sets the coordinate system to DICOM not relative
+// - Sets the dose grid to cover a 30cm cube with a 1 mm resolution
+// - Overrides the phantom with a relative stopping power of 1
+// - Sets the couch removal plane to the bottom of the phantom
+// - Sets the plan to 1 fraction so the dose is the same as the measurement
+// - Sets a list of relative isodose lines that make it easier to visualise the dose distribution per field
+//
+//  Jamil Lambert Sept 2017
+
+IF.RoiList.ContainsObject.#"Couch".THEN.RoiList.#"Couch".Destroy = "";
+IF.RoiList.ContainsObject.#"CouchIn".THEN.RoiList.#"CouchIn".Destroy = "";
+IF.PoiList.ContainsObject.#"Couch".THEN.PoiList.#"Couch".Destroy = "";
+RoiList.#"*".Display2d = "Off";
+TrialList .Current .UseCoordRefPoint = 0;
+TrialList.Current.BeamList.#"*".Gantry = 0.0;
+TrialList.Current.BeamList.#"*".Couch = 0.0;
+TrialList.Current.DoseGrid.VoxelSize.X = 0.1;
+TrialList.Current.DoseGrid.VoxelSize.Y = 0.1;
+TrialList.Current.DoseGrid.VoxelSize.Z = 0.1;
+TrialList .Current .DoseGrid .Origin .DisplayX = -15;
+TrialList .Current .DoseGrid .Origin .DisplayY = -10;
+TrialList .Current .DoseGrid .Origin .DisplayZ = -15;
+TrialList .Current .DoseGrid .Dimension .X = 301;
+TrialList .Current .DoseGrid .Dimension .Y = 301;
+TrialList .Current .DoseGrid .Dimension .Z = 301;
+TrialList.Current.FluenceGridMatchesDoseGrid = 0;
+TrialList.Current.FluenceGridResolution =  0.1;
+TrialList.Current.CouchRemovalYCoordinate = -20;
+TrialList .Current .PrescriptionList .Current .NumberOfFractions = "1";
+
+RoiList.ChildrenEachCurrent.#"@".RoiList.Current.OverrideDensity = 0;
+
+IF.RoiList.ContainsObject.#"External".THEN = {
+	RoiList.Current = "External";
+	RoiList.Current.StoppingPower = 1;
+	RoiList.Current.OverrideDensity = 1;
+};
+//Else
+IF.RoiList.#"!ContainsObject".#"External".THEN.WarningMessage = "No External ROI, Phantom density not overridden!";
+
+IF.RoiList.ContainsObject.#"External_1".THEN = {
+	RoiList.Current = "External";
+	RoiList.Current.OverrideDensity = 0;
+	RoiList.Current = "External_1";
+	RoiList.Current.StoppingPower = 1;
+	RoiList.Current.OverrideDensity = 1;
+	WarningMessage = "More than one External contour detected. \n\nCHECK DENSITY OVERRIDES are correct!";
+};
+
+IsodoseControl.LineList.#"*".Destroy = "";
+IsodoseControl.LineList.CreateChildren = 14;
+IsodoseControl.LineList.#"#0".IsoValue = 98;
+IsodoseControl.LineList.#"#0".Color = ColorList.#"#0".Name;
+IsodoseControl.LineList.#"#1".IsoValue = 96;
+IsodoseControl.LineList.#"#1".Color = ColorList.#"#1".Name;
+IsodoseControl.LineList.#"#2".IsoValue = 94;
+IsodoseControl.LineList.#"#2".Color = ColorList.#"#2".Name;
+IsodoseControl.LineList.#"#3".IsoValue = 92;
+IsodoseControl.LineList.#"#3".Color = ColorList.#"#3".Name;
+IsodoseControl.LineList.#"#4".IsoValue = 90;
+IsodoseControl.LineList.#"#4".Color = ColorList.#"#4".Name;
+IsodoseControl.LineList.#"#5".IsoValue = 85;
+IsodoseControl.LineList.#"#5".Color = ColorList.#"#5".Name;
+IsodoseControl.LineList.#"#6".IsoValue = 80;
+IsodoseControl.LineList.#"#6".Color = ColorList.#"#6".Name;
+IsodoseControl.LineList.#"#7".IsoValue = 75;
+IsodoseControl.LineList.#"#7".Color = ColorList.#"#7".Name;
+IsodoseControl.LineList.#"#8".IsoValue = 70;
+IsodoseControl.LineList.#"#8".Color = ColorList.#"#8".Name;
+IsodoseControl.LineList.#"#9".IsoValue = 60;
+IsodoseControl.LineList.#"#9".Color = ColorList.#"#9".Name;
+IsodoseControl.LineList.#"#10".IsoValue = 50;
+IsodoseControl.LineList.#"#10".Color = ColorList.#"#10".Name;
+IsodoseControl.LineList.#"#11".IsoValue = 40;
+IsodoseControl.LineList.#"#11".Color = ColorList.#"#16".Name;
+IsodoseControl.LineList.#"#12".IsoValue = 30;
+IsodoseControl.LineList.#"#12".Color = ColorList.#"#17".Name;
+IsodoseControl.LineList.#"#13".IsoValue = 20;
+IsodoseControl.LineList.#"#13".Color = ColorList.#"#24".Name;
+IsodoseControl.NormalizationMode = "Percent of Max Dose";
+
+IF.RoiList.ContainsObject.#"External".THEN.InfoMessage = "Script Finished.\n\nBeam MUs need to be manually set to the same values as in the original plan. ";
