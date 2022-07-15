@@ -6,4 +6,4 @@ DVHPlotStyleRA .NormalizeX = 0;
 DVHListRA .Current .AutoComputeMaxDose = 0;
 DVHGroupRA .MaxDoseOverrideInCentiGrey = "4275";
 DVHGroupRA .NumberOfBins = "1000";
-/* æ? */
+/* Ã¦? */
