@@ -1,0 +1,122 @@
+//  The Script reduces the field sizes of the lateral beams in the sup inf directions
+//  and then creates a ROI from the 8th isodose in the list.  The Heart Lungs and all 
+//  ROIS with type AVOIDANCE are removed. The ROI is then contracted by 5mm in AP & LR.
+//  Beams with a gantry angle within a specifid limit of 0 or 180 are set to 0MU
+//  before the ROI is created.  They are then reset to the original MU at the end.
+//
+//  Jamil Lambert Feb 2017
+//  Requires:
+//      "BreastChangeJaws.subScript";
+//      "BreastSetMU.subScript";
+
+//  Referenced scripts below must be in default directory 
+Store.StringAt.tempJawScript = "/usr/local/PinnacleSiteData/clinical/Scripts/BreastChangeJaws.subScript";
+Store.StringAt.tempMUScript = "/usr/local/PinnacleSiteData/clinical/Scripts/BreastSetMU.subScript";
+
+
+// Reduce Jaw position top and bottom by the values entered here
+Store.FloatAt.tempTopReduction = -1;
+Store.FloatAt.tempBottomReduction = -1;
+Store.FloatAt.tempLeftReduction = 0;
+Store.FloatAt.tempRightReduction = 0;
+
+// Beams with a gantry angle within the below specified angle of 0 or 180 are set to 0MU
+// the dose is calculated to create the ROI and then the MU are restored
+Store.FloatAt.angleLimit = 10;
+Store.FloatAt.setToZero = 1;
+TrialList.Current.BeamList.ChildrenEachCurrent.#"@".Script.ExecuteNow = Store.At.tempMUScript.String;
+
+//Reduce the field size
+TrialList.Current.BeamList.ChildrenEachCurrent.#"@".Script.ExecuteNow = Store.At.tempJawScript.String;
+
+
+// Compute Dose
+TrialList.Current.ComputeUncomputedBeams = 1;
+
+// Run Isodose script that sets it based on the prescription
+// use TrialList.Current.PrescriptionList.#"#0".PrescriptionDose;
+
+// Create ROI and then remove Heart, Lung, and any ROI type "Avoidance" then contract by 5mm 
+RoiList.#"*".ResetRoiExpandState = "";
+
+IF.RoiList.ContainsObject.#"Heart".THEN.RoiList.#"Heart".RoiExpandState = "Source";
+IF.RoiList.ContainsObject.#"LUNG_R".THEN.RoiList.#"LUNG_R".RoiExpandState = "Source";
+IF.RoiList.ContainsObject.#"LUNG_L".THEN.RoiList.#"LUNG_L".RoiExpandState = "Source";
+
+Store.StringAt.avoidString = "AVOIDANCE";
+Store.StringAt.tempCommand = "IF.RoiList.Current.RoiInterpretedType.STRINGEQUALTO.Store.At.avoidString.String.THEN.RoiList.Current.RoiExpandState = Source";
+RoiList.ChildrenEachCurrent.#"@".Store.At.tempCommand.Execute = "";
+IF.RoiList.ContainsObject.#"avoidROI".THEN.RoiList.#"avoidROI".Destroy = "";
+RoiExpandControl.TargetRoiName = "avoidROI";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.ConstantPadding = 0.5;
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.Expand = 1;
+RoiExpandControl.DoExpand = "";
+RoiList.#"*".ResetRoiExpandState = "";
+
+IF.RoiList.ContainsObject.#"avoidSkin".THEN.RoiList.#"avoidSkin".Destroy = "";
+IF.RoiList.ContainsObject.#"SKIN".THEN.RoiList.#"SKIN".RoiExpandState = "Source";
+IF.RoiList.ContainsObject.#"Body".THEN.RoiList.#"Body".RoiExpandState = "Source";
+IF.RoiList.ContainsObject.#"External".THEN.RoiList.#"External".RoiExpandState = "Source";
+RoiExpandControl.TargetRoiName = "avoidSkin";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.ConstantPadding = 0.5;
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.Expand = 0;
+RoiExpandControl.DoExpand = "";
+RoiList.#"*".ResetRoiExpandState = "";
+
+IF.RoiList.ContainsObject.#"tempROI".THEN.RoiList.#"tempROI".Destroy = "";
+IsodoseControl.LineList.#"#7".CopyToRoiList = "";
+RoiList.Current.Name = "tempROI";
+RoiList.Current = "tempROI";
+RoiList.Current.RoiExpandState = "Source";
+RoiList.#"avoidSkin".RoiExpandState = "Avoid Exterior";
+RoiList.#"avoidROI".RoiExpandState = "Avoid Interior";
+IF.RoiList.ContainsObject.#"nTV".THEN.RoiList.#"nTV".MakeCurrent.ELSE.CreateNewROI = "";
+RoiList.Current.Name = "nTV";
+RoiExpandControl.CreateNewTarget = 0;
+RoiExpandControl.TargetRoi = "nTV";
+RoiExpandControl.NegXPadding = 0.5;
+RoiExpandControl.PosXPadding = 0.5;
+RoiExpandControl.NegYPadding = 0.5;
+RoiExpandControl.PosYPadding = 0.5;
+RoiExpandControl.NegZPadding = 0;
+RoiExpandControl.PosZPadding = 0;
+RoiExpandControl.UseConstantPadding = 0;
+RoiExpandControl.Expand = 0;
+RoiExpandControl.DoExpand = "";
+RoiList.#"*".ResetRoiExpandState = "";
+
+RoiList.#"tempROI".Destroy = "";
+RoiList.#"avoidSkin".Destroy = "";
+RoiList.#"avoidROI".Destroy = "";
+
+
+//Restore the MU for the 0 and 180 fields
+Store.FloatAt.setToZero = 0;
+TrialList.Current.BeamList.ChildrenEachCurrent.#"@".Script.ExecuteNow = Store.At.tempMUScript.String;
+
+
+// Change Jaws postion back to original value 
+Store.At.tempTopReduction.Negate = "";
+Store.At.tempBottomReduction.Negate = "";
+Store.At.tempLeftReduction.Negate = "";
+Store.At.tempRightReduction.Negate = "";
+TrialList.Current.BeamList.ChildrenEachCurrent.#"@".Script.ExecuteNow = Store.At.tempJawScript.String;
+
+TrialList.Current.ComputeUncomputedBeams = 1;
+
+
+// Clear variables
+Store.FreeAt.tempTopReduction = "";
+Store.FreeAt.tempBottomReduction = "";
+Store.FreeAt.tempLeftReduction = "";
+Store.FreeAt.tempRightReduction = "";
+Store.FreeAt.angleLimit = "";
+Store.FreeAt.tempJawScript = "";
+Store.FreeAt.avoidString = "";
+Store.FreeAt.tempCommand = "";
+
+WarningMessage = "Script Finished";

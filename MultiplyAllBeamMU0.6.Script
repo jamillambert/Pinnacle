@@ -1,0 +1,11 @@
+//  Multiplies all beam MU by value entered in subScript
+//  Jamil Lambert 10/12/2018
+//  Requires:
+//      "MultiplyBeamMU.subScript";
+Store.FloatAt.multiplier = 0.6;
+Store.StringAt.tempMUScript = "/home/jlambert/Scripts/NonClinical/MultiplyBeamMU.subScript";
+
+TrialList.Current.BeamList.ChildrenEachCurrent.#"@".Script.ExecuteNow = Store.At.tempMUScript.String;
+
+Store.FreeAt.multiplier = "";
+Store.FreeAt.tempMUScript = "";

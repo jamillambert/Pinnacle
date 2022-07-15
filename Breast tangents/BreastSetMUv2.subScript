@@ -1,0 +1,42 @@
+// Requires the variable Store.At.setToZero to be set to 1 to store the beam MU 
+// in a variable and then set the MU to 0.  And then to be set to 0 to restore the MU
+// back to the value stored from the first run of the script
+// Requires the following variables to be set before being called:
+// Store.FloatAt.angleLimit = x;
+// Store.FloatAt.setToZero = 0 or 1;
+
+Store.FloatAt.tempGantry = TrialList.Current.BeamList.Current.Gantry;
+Store.At.tempGantry.Subtract = 180;
+Store.At.tempGantry.Absolute = "";
+IF.Store.At.tempGantry.Value.LESSTHAN.Store.At.angleLimit.Value.THEN.Store.FloatAt.validAngle = 0;
+
+Store.FloatAt.tempGantry = TrialList.Current.BeamList.Current.Gantry;
+Store.At.tempGantry.Subtract = 360;
+Store.At.tempGantry.Absolute = "";
+IF.Store.At.tempGantry.Value.LESSTHAN.Store.At.angleLimit.Value.THEN.Store.FloatAt.validAngle = 0;
+
+Store.FloatAt.tempGantry = TrialList.Current.BeamList.Current.Gantry;
+Store.At.tempGantry.Subtract = 0;
+Store.At.tempGantry.Absolute = "";
+IF.Store.At.tempGantry.Value.LESSTHAN.Store.At.angleLimit.Value.THEN.Store.FloatAt.validAngle = 0;
+
+IF.Store.At.validAngle.Value.EQUALTO.#"0".THEN = {
+	IF.Store.At.setToZero.Value.EQUALTO.#"1".THEN = {
+		Store.StringAt.tempStoreOldMU = "Store.FloatAt.temp";
+		Store.At.tempStoreOldMU.AppendString = TrialList.Current.BeamList.Current.Name;
+		Store.At.tempStoreOldMU.AppendString = " = TrialList.Current.BeamList.Current.MonitorUnits";
+		Store.At.tempStoreOldMU.Execute = "";
+		TrialList.Current.SetBeamMonitorUnits.Current.Address = 0;
+	};
+	
+	IF.Store.At.setToZero.Value.EQUALTO.#"0".THEN = {
+		Store.StringAt.tempRestoreMU = "TrialList.Current.SetBeamMonitorUnits.Current.Address = Store.At.temp";
+		Store.At.tempRestoreMU.AppendString = TrialList.Current.BeamList.Current.Name;
+		Store.At.tempRestoreMU.AppendString = ".Value";
+		Store.At.tempRestoreMU.Execute = "";
+	};
+
+};
+
+Store.FreeAt.validAngle = "";
+Store.FreeAt.tempGantry = "";

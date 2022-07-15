@@ -1,0 +1,9 @@
+PluginManager .PlanEvalPlugin .RAPlanEval .TrialList .#"#0" .Selected = 1;
+PluginManager .PlanEvalPlugin .RAPlanEval .TrialList .#"#1" .Selected = 1;
+PluginManager .PlanEvalPlugin .RAPlanEval .TrialList .#"#2" .Selected = 1;
+PluginManager .PlanEvalPlugin .RAPlanEval .ROIList .#"#0" .Selected = 1;
+DVHPlotStyleRA .NormalizeX = 0;
+DVHListRA .Current .AutoComputeMaxDose = 0;
+DVHGroupRA .MaxDoseOverrideInCentiGrey = "4275";
+DVHGroupRA .NumberOfBins = "1000";
+/* æ? */
