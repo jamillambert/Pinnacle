@@ -1,0 +1,35 @@
+//  The Script expands or contracts all ROIs by the specified ammount
+//  designed for use in the gradient field plan to change the size of the resulting field
+//
+//  Jamil Lambert Nov 2017
+//  Requires:
+//              Batch_ROI_Expand.subScript
+
+
+////  ENTER VALUES HERE
+Store.StringAt.tempSubScript = "/home/jlambert/Scripts/NonClinical/Batch_ROI_Expand.subScript";
+
+Store.FloatAt.negX = 2;  // Right
+Store.FloatAt.posX = 2;  // Left
+Store.FloatAt.negY = 0;  // Anterior
+Store.FloatAt.posY = 0;  // Posterior
+Store.FloatAt.negZ = 3;  // Superior
+Store.FloatAt.posZ = 3;  // Inferior
+Store.FloatAt.expandOrContract = 0;  // 1 for expand or 0 for contract
+//// END of enter values
+
+
+RoiList.ChildrenEachCurrent.#"@".Script.ExecuteNow = Store.At.tempSubScript.String;  //All ROIs
+
+// Script.ExecuteNow = Store.At.tempSubScript.String;  // Current ROI only
+
+Store.FreeAt.tempSubScript = "";
+Store.FreeAt.negX = "";
+Store.FreeAt.posX = "";
+Store.FreeAt.negY = "";
+Store.FreeAt.posY = "";
+Store.FreeAt.negZ = "";
+Store.FreeAt.posZ = "";
+Store.FreeAt.expandOrContract = ""; 
+
+InfoMessage = "Script Finished";

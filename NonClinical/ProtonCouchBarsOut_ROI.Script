@@ -1,0 +1,141 @@
+// Creates a ROI to smulate where the bars on the proton couch are when fully out, for collision checks only, they cannot be irradiated through
+// Requires a POI called Couch to be set at the top of the couch at any x or z position
+// Written by Jamil Lambert 07/11/2018
+
+Store.FloatAt.tempBarThickness = 9;	//Thickness of the bars (cm)
+Store.FloatAt.tempWidth = 8;		//Width of the bars (cm)
+Store.FloatAt.tempSeparation = 19.5; 		//Half the distance between the bars (cm), i.e. the distance from the inside of the bar to the centre of the couch
+Store.FloatAt.tempCouchThickness = 2.8;	//Thickness of the proton couch (cm)
+
+IF.PoiList.#"!ContainsObject".#"Couch".THEN.WarningMessage = "No Couch POI. Place a POI on the top of the couch called \"Couch\" and run the script again."; 
+//Else
+IF.PoiList.ContainsObject.#"Couch".THEN ={
+	IF.RoiList.ContainsObject.#"ProtonCouchBars".THEN.RoiList.#"ProtonCouchBars".Destroy = "";
+	IF.RoiList.ContainsObject.#"ProtonCouchBar1".THEN.RoiList.#"ProtonCouchBar1".Destroy = "";
+	IF.RoiList.ContainsObject.#"ProtonCouchBar2".THEN.RoiList.#"ProtonCouchBar2".Destroy = "";
+	
+	Store.FloatAt.x1 = Store.At.tempSeparation.Value;
+	Store.FloatAt.x2 = Store.At.tempSeparation.Value;	
+	Store.At.x2.Add = Store.At.tempWidth.Value;
+	Store.FloatAt.x3 = 0;
+	Store.At.x3.Subtract = Store.At.x1.Value;
+	Store.FloatAt.x4 = 0;	
+	Store.At.x4.Subtract = Store.At.x2.Value;
+	
+	Store.FloatAt.y1 = PoiList.#"Couch".CurrYCoord;
+	Store.At.y1.Subtract = Store.At.tempCouchThickness.Value;
+	Store.FloatAt.y2 = Store.At.y1.Value;
+	Store.At.y2.Subtract = Store.At.tempBarThickness.Value;
+
+	Store.FloatAt.z1 = VolumeList.#"#0".Start.Z;
+	Store.FloatAt.z2 = VolumeList.#"#0".Start.Z;
+	Store.FloatAt.CTlength = VolumeList.#"#0".VoxelSize.Z;
+	Store.At.CTlength.Multiply = VolumeList.#"#0".Dimension.Z;
+	Store.At.z2.Add = Store.At.CTlength.Value;
+	Store.At.z2.Subtract = VolumeList.#"#0".VoxelSize.Z;
+
+	//Create ROI on slice at z1 for bar 1
+	CreateNewROI = "";
+	RoiList.Current.EditCurve.SliceCoordinate = Store.At.z1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.CloseCurve = "1";
+
+
+	//Create ROI on slice at z2
+	RoiList.Current.EditCurve.SliceCoordinate = Store.At.z2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.CloseCurve = "1";
+	
+	//Interpolate
+	RoiList.Current.InterpolateContours = "";	
+	RoiList.Current.Name = "ProtonCouchBar1";	
+	RoiList.#"*".ResetRoiExpandState = "";
+	RoiList.Current.RoiExpandState = "Source";
+	
+	//Create ROI on slice at z1 for bar 2
+	CreateNewROI = "";
+	RoiList.Current.EditCurve.SliceCoordinate = Store.At.z1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x3.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x4.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x4.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x3.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.CloseCurve = "1";
+
+	//Create ROI on slice at z2
+	RoiList.Current.EditCurve.SliceCoordinate = Store.At.z2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x3.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x4.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x4.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x3.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.CloseCurve = "1";
+	
+	//Interpolate
+	RoiList.Current.InterpolateContours = "";	
+	RoiList.Current.Name = "ProtonCouchBar2";
+	RoiList.Current.RoiExpandState = "Source";
+	RoiExpandControl.TargetRoiName = "ProtonCouchBars";
+	RoiExpandControl.CreateNewTarget = 1;
+	RoiExpandControl.ConstantPadding = 0;
+	RoiExpandControl.UseConstantPadding = 1;
+	RoiExpandControl.Expand = 0;
+	RoiExpandControl.DoExpand = "";
+	RoiList.#"*".ResetRoiExpandState = "";
+	RoiList .Current .Display2dWithMeshCheck = "Colorwash";
+	RoiList .Current .Color = "grey";
+	IF.RoiList.ContainsObject.#"ProtonCouchBar1".THEN.RoiList.#"ProtonCouchBar1".Destroy = "";
+	IF.RoiList.ContainsObject.#"ProtonCouchBar2".THEN.RoiList.#"ProtonCouchBar2".Destroy = "";
+	
+
+	Store.FreeAt.x1 = "";
+	Store.FreeAt.x2 = "";	
+	Store.FreeAt.x3 = "";
+	Store.FreeAt.x4 = "";
+	Store.FreeAt.y1 = "";
+	Store.FreeAt.y2 = "";
+	Store.FreeAt.z1 = "";
+	Store.FreeAt.z2 = "";
+	Store.FreeAt.CTlength = "";
+};
+
+Store.FreeAt.tempBarThickness = "";
+Store.FreeAt.tempWidth = "";
+Store.FreeAt.tempSeparation = "";
+Store.FreeAt.tempCouchThickness = "";

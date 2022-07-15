@@ -1,0 +1,7 @@
+Store.FloatAt.modifiedSpotsBefore = spotsOverMax;
+TrialList.Current.BeamList.Current.ProtonManager.LayerList.List.ChildrenEachCurrent.#"@".Script.ExecuteNow = "/home/jlambert/Scripts/NonClinical/SetMaxSpotMUStep3.subScript" ;
+IF.Store.At.spotsOverMax.Value.GREATERTHAN.Store.At.modifiedSpotsBefore.Value.THEN ={
+  Store.At.modifiedBeams.AppendString = TrialList.Current.BeamList.Current.Name;
+  Store.At.modifiedBeams.AppendString = "   ";
+  };
+Store.FreeAt.modifiedSpotsBefore = "";

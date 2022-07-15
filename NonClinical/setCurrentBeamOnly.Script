@@ -1,0 +1,28 @@
+//  Records all beam MU and then sets all beams, except the current beam to 0 MU
+//  Jamil Lambert 30/03/2017
+//  Requires:
+//      "setRestoreMU.subScript";
+
+Store.StringAt.tempMUScript = "/home/jlambert/Scripts/NonClinical/setRestoreMU.subScript";
+
+Store.FloatAt.setMUToZero = 1;
+Store.FloatAt.numberBeams = 0;
+Store.FloatAt.tempCurrentMU = TrialList.Current.BeamList.Current.MonitorUnits;
+Store.StringAt.tempCurrentBeam = TrialList.Current.BeamList.Current.Name;
+TrialList.Current.BeamList.ChildrenEachCurrent.#"@".Script.ExecuteNow = Store.At.tempMUScript.String;
+
+Store.StringAt.tempCurrentBeamCommand = "TrialList.Current.BeamList.#\"";
+Store.At.tempCurrentBeamCommand.AppendString = Store.At.tempCurrentBeam.Value;
+Store.At.tempCurrentBeamCommand.AppendString = "\".MakeCurrent = \"\"";
+Store.At.tempCurrentBeamCommand.Execute = "";
+
+Store.At.tempCurrentMU.Multiply = Store.At.numberBeams.Value;
+
+TrialList.Current.SetBeamMonitorUnits.Current.Address = Store.At.tempCurrentMU.Value;
+TrialList.Current.ComputeUncomputedBeams = 1;
+
+Store.FreeAt.tempMUScript = "";
+Store.FreeAt.tempCurrentMU = "";
+Store.FreeAt.tempCurrentBeamCommand = "";
+
+InfoMessage = "Script finished";

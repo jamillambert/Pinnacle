@@ -1,0 +1,237 @@
+// Script to set up two default fields and the required ROIs, dose grid, prescription, objectives etc. for
+// the Velindre IMN breast planning study.  Setup for left breast, for right breast gantry angle, lung objective
+// DVH, scorecard and DVH ROI names need to be changed manually afterwards
+//
+// Jamil Lambert 11/01/2018
+//
+// Requires:
+//           All of the ROIs must be named consistently or the script manually changed
+
+//// User input of beam parameters ////
+Store.StringAt.fieldMachineName = "IBA-APSS-DN";  //Beam model to use eg. "IBA-APSS-DN"
+Store.FloatAt.maxExtension = 17.8; 		//Maximum snout extension allowed;
+Store.FloatAt.fieldProxMargin = 0;		//cm
+Store.FloatAt.fieldDistMargin = 0.4;	//cm
+Store.FloatAt.fieldLatMargin = 1;		//cm
+Store.FloatAt.fieldSpotSpacing = 0.8;	//cm
+Store.FloatAt.fieldLayerSpacing = 75;	//% (default is 80) 
+Store.FloatAt.airGap = 10;				//cm Ignored if RS is none, the value is checked/adjusted further down to ensure the snout extension is not more than the maximum specified
+
+//// End of user input section ////
+
+PluginManager.PlanEvalPlugin.TrialList.#"*".Selected = 0;
+PluginManager.PlanEvalPlugin.ROIList.#"*".Selected = 0;	
+PluginManager.PlanEvalPlugin.TrialList.Current.Selected = 1;
+PluginManager.PlanEvalPlugin.TrialList.Current.LineType = "Medium Solid";
+DVHPlotStyle.NormalizeX = 0;
+PluginManager.PlanEvalPlugin.ROIList.#"#2".Selected = 1;
+PluginManager.PlanEvalPlugin.ROIList.#"#1".Selected = 1;
+
+// Set up the ROIs
+RoiList.#"*".ResetRoiExpandState = "";
+RoiList.#"External".RoiExpandState = "Source";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.ConstantPadding = " 0.5";
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.TargetRoiName = "ext-5mm";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.Expand = 0;
+RoiExpandControl.DoExpand = "";
+RoiList.#"ext-5mm".Display2d = "Off";
+RoiList.#"*".ResetRoiExpandState = "";
+
+IF.RoiList.ContainsObject.#"PTVp_4000".THEN.RoiList.#"PTVp_4000".RoiExpandState = "Source";
+IF.RoiList.ContainsObject.#"PTVn1_3600".THEN.RoiList.#"PTVn1_3600".RoiExpandState = "Source";
+IF.RoiList.ContainsObject.#"PTVn2_3600".THEN.RoiList.#"PTVn2_3600".RoiExpandState = "Source";
+RoiList.#"External".RoiExpandState = "Avoid Exterior";
+RoiExpandControl.TargetRoiName = "PTV";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.ConstantPadding = " 0";
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.Expand = 1;
+RoiExpandControl.DoExpand = "";
+RoiList.#"*".ResetRoiExpandState = "";
+RoiList.#"PTV".Display2d = "Off";
+
+RoiList.#"PTV".RoiExpandState = "Source";
+RoiList.#"External".RoiExpandState = "Avoid Exterior";
+RoiExpandControl.ConstantPadding = "3";
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.TargetRoiName = "ring_PTV";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.DoRingExpansion = "";
+RoiList.#"ring_PTV".Display2d = "Off";
+RoiList.#"*".ResetRoiExpandState = "";
+
+IF.RoiList.ContainsObject.#"PTVn1_3600".THEN.RoiList.#"PTVn1_3600".RoiExpandState = "Source";
+IF.RoiList.ContainsObject.#"PTVn2_3600".THEN.RoiList.#"PTVn2_3600".RoiExpandState = "Source";
+RoiList.#"External".RoiExpandState = "Avoid Exterior";
+IF.RoiList.ContainsObject.#"PTVp_4000".THEN.RoiList.#"PTVp_4000".RoiExpandState = "Avoid Interior";
+RoiExpandControl.TargetRoiName = "PTV_n-p";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.ConstantPadding = "0";
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.Expand = 1;
+RoiExpandControl.DoExpand = "";	
+RoiList.#"PTV_n-p".Display2d = "Off";
+PluginManager.PlanEvalPlugin.ROIList.Last.Selected = 1;
+RoiList.#"*".ResetRoiExpandState = "";
+
+IF.RoiList.ContainsObject.#"PTVp_4000".THEN.RoiList.#"PTVp_4000".RoiExpandState = "Source";
+RoiList.#"External".RoiExpandState = "Avoid Exterior";
+RoiExpandControl.TargetRoiName = "PTV_p-air";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.ConstantPadding = "0";
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.Expand = 1;
+RoiExpandControl.DoExpand = "";
+RoiList.#"PTV_p-air".Display2d = "Off";
+PluginManager.PlanEvalPlugin.ROIList.Last.Selected = 1;	
+RoiList.#"*".ResetRoiExpandState = "";
+
+IF.RoiList.ContainsObject.#"PTVp_4000".THEN.RoiList.#"PTVp_4000".RoiExpandState = "Source";
+IF.RoiList.ContainsObject.#"Lung_L".THEN.RoiList.#"Lung_L".RoiExpandState = "Avoid Interior";
+IF.RoiList.ContainsObject.#"Lung_R".THEN.RoiList.#"Lung_R".RoiExpandState = "Avoid Interior";
+RoiList.#"ext-5mm".RoiExpandState = "Avoid Exterior";
+RoiExpandControl.TargetRoiName = "PTV_WB_L_DVH";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.ConstantPadding = "0";
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.Expand = 1;
+RoiExpandControl.DoExpand = "";
+RoiList.#"PTV_WB_L_DVH".Display2d = "Off";
+RoiList.#"*".ResetRoiExpandState = "";
+
+IF.RoiList.ContainsObject.#"PTVn1_3600".THEN.RoiList.#"PTVn1_3600".RoiExpandState = "Source";
+IF.RoiList.ContainsObject.#"Lung_L".THEN.RoiList.#"Lung_L".RoiExpandState = "Avoid Interior";
+IF.RoiList.ContainsObject.#"Lung_R".THEN.RoiList.#"Lung_R".RoiExpandState = "Avoid Interior";
+IF.RoiList.ContainsObject.#"PTVp_4000".THEN.RoiList.#"PTVp_4000".RoiExpandState = "Avoid Interior";
+RoiList.#"ext-5mm".RoiExpandState = "Avoid Exterior";
+RoiExpandControl.TargetRoiName = "PTV_nodes_L_DVH";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.ConstantPadding = "0";
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.Expand = 1;
+RoiExpandControl.DoExpand = "";
+RoiList.#"PTV_nodes_L_DVH".Display2d = "Off";
+RoiList.#"*".ResetRoiExpandState = "";	
+
+IF.RoiList.ContainsObject.#"PTVn2_3600".THEN.RoiList.#"PTVn2_3600".RoiExpandState = "Source";
+IF.RoiList.ContainsObject.#"Lung_L".THEN.RoiList.#"Lung_L".RoiExpandState = "Avoid Interior";
+IF.RoiList.ContainsObject.#"Lung_R".THEN.RoiList.#"Lung_R".RoiExpandState = "Avoid Interior";
+IF.RoiList.ContainsObject.#"PTVp_4000".THEN.RoiList.#"PTVp_4000".RoiExpandState = "Avoid Interior";
+RoiList.#"ext-5mm".RoiExpandState = "Avoid Exterior";
+RoiExpandControl.TargetRoiName = "PTV_IMC_L_DVH";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.ConstantPadding = "0";
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.Expand = 1;
+RoiExpandControl.DoExpand = "";
+RoiList.#"PTV_IMC_L_DVH".Display2d = "Off";
+RoiList.#"*".ResetRoiExpandState = "";	
+
+//Set up a beam at G0
+CreateNewBeam = "";
+TrialList.Current.BeamList.Current.Machine = Store.At.fieldMachineName.String;
+TrialList.Current.BeamList.Current.ProtonManager.TargetROI = "PTV";
+TrialList.Current.BeamList.Current.Name = "G000T000";
+TrialList.Current.BeamList.Current.FieldID = "000A1";
+TrialList.Current.BeamList.Current.Gantry = "0";
+TrialList.Current.BeamList.Current.Couch = "0";
+TrialList.Current.BeamList.Current.ProtonManager.RangeShifterName = "RS4cm";
+TrialList.Current.BeamList.Current.ProtonManager.IsAutoComputeMargin = 1;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamLateralTargetMarginTop = "1";
+TrialList.Current.BeamList.Current.ProtonManager.ProximalMargin = Store.At.fieldProxMargin.Value;
+TrialList.Current.BeamList.Current.ProtonManager.DistalMargin = Store.At.fieldDistMargin.Value;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamLateralTargetMarginTop = Store.At.fieldLatMargin.Value;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamSpotSpacingModeIsAuto = 0;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamAutoComputeSpotRes = 0;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamSpotSpacing = Store.At.fieldSpotSpacing.Value;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamLayerOverlapPercent = Store.At.fieldLayerSpacing.Value;
+//Check if air gap is too small and if it is set it to the minimum (i.e. max snout extension)
+Store.FloatAt.snoutExtension = 0;
+Store.At.snoutExtension.Subtract = Store.At.fieldModulation.Value;
+Store.At.snoutExtension.Divide = 2;
+Store.At.snoutExtension.Add = Store.At.fieldRange.Value;
+Store.FloatAt.zero = 0;
+Store.At.snoutExtension.Add = Store.At.airGap.Value;
+Store.At.snoutExtension.Subtract = Store.At.maxExtension.Value;
+Store.At.snoutExtension.Add = 3.65;
+IF.Store.At.snoutExtension.Value.LESSTHAN.Store.At.zero.Value.THEN.Store.At.airGap.Subtract = Store.At.snoutExtension.Value;
+Store.FreeAt.snoutExtension = "";
+Store.FreeAt.zero = "";
+//If there is a range shifter set the air gap to the value specified or the minimum if the specified value is too small
+Store.StringAt.tempRS4cm = "RS4cm";
+IF.Store.At.fieldRS.String.STRINGEQUALTO.Store.At.tempRS4cm.String.THEN.TrialList.Current.BeamList.Current.ProtonManager.AirGapAlongCentralAxis = Store.At.airGap.Value;
+Store.FreeAt.tempRS4cm = "";
+
+//Set up a beam at G45
+CreateNewBeam = "";
+TrialList.Current.BeamList.Current.Machine = Store.At.fieldMachineName.String;
+TrialList.Current.BeamList.Current.ProtonManager.TargetROI = "PTV";
+TrialList.Current.BeamList.Current.Name = "G045T000";
+TrialList.Current.BeamList.Current.FieldID = "045A1";
+TrialList.Current.BeamList.Current.Gantry = "45";
+TrialList.Current.BeamList.Current.Couch = "0";
+TrialList.Current.BeamList.Current.ProtonManager.RangeShifterName = "RS4cm";
+TrialList.Current.BeamList.Current.ProtonManager.IsAutoComputeMargin = 1;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamLateralTargetMarginTop = "1";
+TrialList.Current.BeamList.Current.ProtonManager.ProximalMargin = Store.At.fieldProxMargin.Value;
+TrialList.Current.BeamList.Current.ProtonManager.DistalMargin = Store.At.fieldDistMargin.Value;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamLateralTargetMarginTop = Store.At.fieldLatMargin.Value;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamSpotSpacingModeIsAuto = 0;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamAutoComputeSpotRes = 0;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamSpotSpacing = Store.At.fieldSpotSpacing.Value;
+TrialList.Current.BeamList.Current.ProtonManager.SpotParamLayerOverlapPercent = Store.At.fieldLayerSpacing.Value;
+//Check if air gap to too small and if it is set it to the minimum (i.e. max snout extension)
+Store.FloatAt.snoutExtension = 0;
+Store.At.snoutExtension.Subtract = Store.At.fieldModulation.Value;
+Store.At.snoutExtension.Divide = 2;
+Store.At.snoutExtension.Add = Store.At.fieldRange.Value;
+Store.FloatAt.zero = 0;
+Store.At.snoutExtension.Add = Store.At.airGap.Value;
+Store.At.snoutExtension.Subtract = Store.At.maxExtension.Value;
+Store.At.snoutExtension.Add = 3.65;
+IF.Store.At.snoutExtension.Value.LESSTHAN.Store.At.zero.Value.THEN.Store.At.airGap.Subtract = Store.At.snoutExtension.Value;
+Store.FreeAt.snoutExtension = "";
+Store.FreeAt.zero = "";
+//If there is a range shifter set the air gap to the value specified or the minimum if the specified value is too small
+Store.StringAt.tempRS4cm = "RS4cm";
+IF.Store.At.fieldRS.String.STRINGEQUALTO.Store.At.tempRS4cm.String.THEN.TrialList.Current.BeamList.Current.ProtonManager.AirGapAlongCentralAxis = Store.At.airGap.Value;
+Store.FreeAt.tempRS4cm = "";
+
+//Set up dose grid
+TrialList.Current.DoseGrid.VoxelSize.X = 0.25;
+TrialList.Current.DoseGrid.VoxelSize.Y = 0.25;
+TrialList.Current.DoseGrid.VoxelSize.Z = 0.25;
+RoiList.Current = "External";
+TrialList.Current.AutoCoverROI = "";
+
+//Prescription
+TrialList.Current.PrescriptionList.Current.PrescriptionPeriod = "Overall";
+TrialList.Current.PrescriptionList.Current.PrescriptionDose = "4000";
+TrialList.Current.PrescriptionList.Current.NumberOfFractions = " 15";
+TrialList.Current.PrescriptionList.Current.NormalizationMethod = "ROI Mean";
+TrialList.Current.PrescriptionList.Current.PrescriptionRoi = "PTVp_4000";	
+TrialList.Current.WeightEqual = "";	
+
+//IMRT Parameters
+TrialList.Current.BeamList.#"*".IMRTParameterType = "IMPT";
+TrialList.Current.BeamList.#"*".ProtonManager.IsSfudNeeded = 1;
+TrialList.Current.BeamList.#"*".ProtonManager.SfudWeight = " 10";
+TrialList.Current.BeamList.#"*".ProtonManager.SfudVariation = " 2";
+
+PluginManager.InversePlanningManager.ProtocolManager.FileList.FileOnly = "Velindre_IMN_study_L";
+PluginManager.InversePlanningManager.ProtocolManager.Load = "";
+
+
+Store.FreeAt.fieldMachineName = "";
+Store.FreeAt.maxExtension = "";
+Store.FreeAt.fieldProxMargin = "";
+Store.FreeAt.fieldDistMargin = "";
+Store.FreeAt.fieldLatMargin = "";
+Store.FreeAt.fieldSpotSpacing = "";
+Store.FreeAt.fieldLayerSpacing = "";
+Store.FreeAt.airGap = "";	
+
+InfoMessage = "Script Finished";

@@ -1,0 +1,2 @@
+PluginManager .PlanEvalPlugin .TrialList .#"*" .Selected = 0;
+PluginManager .PlanEvalPlugin .ROIList .#"*" .Selected = 0;	

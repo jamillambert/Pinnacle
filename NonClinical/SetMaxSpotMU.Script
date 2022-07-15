@@ -1,0 +1,33 @@
+// Iterates through all beams, layers, spots and sets all spots with an MU above the maximum to the maximum allowed, same as CheckMaxSpotMU.Script with the variable setMax = 1
+//
+// Jamil Lambert 31/07/2018
+// Requires:
+//      SetMaxSpotMUStep2.subScript   - Iterates through each layer of the beam
+//      SetMaxSpotMUStep3.subScript   - Iterates through each spot of the layer
+//      SetMaxSpotMUStep4.subScript   - Checks if the spot is below the max or sets it to the max and increments the spotsOverMax value
+
+//The maximum allowed MU per spot
+Store.FloatAt.maxSpotMU = 10;
+
+Store.FloatAt.spotsOverMax = 0;
+Store.StringAt.modifiedBeams = "";
+Store.FloatAt.setMax = 1;
+
+TrialList.Current.BeamList.ChildrenEachCurrent.#"@".Script.ExecuteNow = "/home/jlambert/Scripts/NonClinical/SetMaxSpotMUStep2.subScript" ;
+
+Store.StringAt.tempMessage = "Beam(s): ";
+Store.At.tempMessage.AppendString = Store.At.modifiedBeams.String;
+Store.At.tempMessage.AppendString  = "\nhad ";
+Store.At.tempMessage.AppendString = Store.At.spotsOverMax.Value;
+Store.At.tempMessage.AppendString = " spots above the maximum allowed MU.\nAll of these spots MU were set to the maximum value of ";
+Store.At.tempMessage.AppendString = Store.At.maxSpotMU.Value;
+
+IF.Store.At.spotsOverMax.Value.GREATERTHANOREQUALTO.#"1".THEN.WarningMessage = Store.At.tempMessage.String;
+
+IF.Store.At.spotsOverMax.Value.EQUALTO.#"0".THEN.InfoMessage = "Script finished. No spots over max MU";
+
+Store.FreeAt.tempMessage = "";
+Store.FreeAt.spotsOverMax = "";
+Store.FreeAt.maxSpotMU = "";
+Store.FreeAt.modifiedBeams = "";
+Store.FreeAt.setMax = "";

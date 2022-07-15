@@ -1,0 +1,5 @@
+
+IF.TrialList.Current.BeamList.Current.ProtonManager.LayerList.List.Current.Controller.SpotList.List.Current.SpotMU.GREATERTHAN.Store.At.maxSpotMU.Value.THEN ={
+  IF.Store.At.setMax.Value.EQUALTO.#"1".THEN.TrialList.Current.BeamList.Current.ProtonManager.LayerList.List.Current.Controller.SpotList.List.Current.SpotMU = Store.At.maxSpotMU.Value;
+  Store.At.spotsOverMax.Add = 1;
+};

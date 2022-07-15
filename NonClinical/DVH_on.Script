@@ -1,0 +1,7 @@
+// Adds the currently selected ROI to the DVH
+// Jamil Lambert 17/11/2017
+
+PluginManager.PlanEvalPlugin.TrialList.ChildrenEachCurrent.#"@".IF.PluginManager.PlanEvalPlugin.TrialList.Current.Index.EQUALTO.TrialList.Current.Index.THEN.PluginManager.PlanEvalPlugin.TrialList.Current.Selected = 1;
+
+PluginManager.PlanEvalPlugin.ROIList.ChildrenEachCurrent.#"@".IF.PluginManager.PlanEvalPlugin.ROIList.Current.Index.EQUALTO.RoiList.Current.Index.THEN.PluginManager.PlanEvalPlugin.ROIList.Current.Selected = 1;
+

@@ -1,0 +1,19 @@
+//  Restores the beam MU to the values recorded by setCurrentBeamOnly.Script
+//  if setCurrentBeamOnly.Script has not already been run nothing is done
+//  Jamil Lambert 30/03/2017
+//  Requires:
+//      "setRestoreMU.subScript";
+
+Store.StringAt.tempMUScript = "/home/jlambert/Scripts/NonClinical/setRestoreMU.subScript";
+
+IF.Store.At.setMUToZero.Value.EQUALTO.#"1".THEN = {
+	Store.FloatAt.setMUToZero = 0;
+	TrialList.Current.BeamList.ChildrenEachCurrent.#"@".Script.ExecuteNow = Store.At.tempMUScript.String;
+	TrialList.Current.ComputeUncomputedBeams = 1;
+	Store.FreeAt.setMUToZero = "";
+};
+
+Store.FreeAt.tempMUScript = "";
+Store.FreeAt.tempCurrentMU = "";
+
+InfoMessage = "Script finished";

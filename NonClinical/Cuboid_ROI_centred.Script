@@ -1,0 +1,89 @@
+// Creates a cuboid ROI with the dimensions and center defined below
+// Written by Jamil Lambert 24/01/2018
+
+//// Enter values here:       ////
+Store.FloatAt.tempWidth = 40;      		//Width (x dimension, Patient LR)
+Store.FloatAt.tempLength = 40;			//Length (y dimension, Patient SI)
+Store.FloatAt.tempHeight = 40;      	//Height (z dimension, Patient AP)
+
+Store.FloatAt.ROIcentreX = 0;
+Store.FloatAt.ROIcentreY = 0;
+Store.FloatAt.ROIcentreZ = 0;
+
+Store.StringAt.tempName = "External"; 	//Name of the ROI
+//// End of user input section ////
+
+
+//Calculation of the corners of the ROI
+Store.At.tempWidth.Divide = 2;
+Store.At.tempLength.Divide = 2;
+Store.At.tempHeight.Divide = 2;		
+
+Store.FloatAt.x1 = Store.At.ROIcentreX.Value;
+Store.At.x1.Add = Store.At.tempWidth.Value;	
+Store.FloatAt.x2 = Store.At.ROIcentreX.Value;
+Store.At.x2.Subtract = Store.At.tempWidth.Value;
+
+Store.FloatAt.y1 = Store.At.ROIcentreY.Value;
+Store.At.y1.Add = Store.At.tempLength.Value;	
+Store.FloatAt.y2 = Store.At.ROIcentreY.Value;
+Store.At.y2.Subtract = Store.At.tempLength.Value;
+
+Store.FloatAt.z1 = Store.At.ROIcentreZ.Value;
+Store.At.z1.Add = Store.At.tempHeight.Value;	
+Store.FloatAt.z2 = Store.At.ROIcentreZ.Value;
+Store.At.z2.Subtract = Store.At.tempHeight.Value;
+
+//Create ROI on slice at z1
+CreateNewROI = "";
+RoiList.Current.EditCurve.SliceCoordinate = Store.At.z1.Value;
+RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+RoiList.Current.EditCurve.CloseCurve = "1";
+
+
+//Create ROI on slice at z2
+RoiList.Current.EditCurve.SliceCoordinate = Store.At.z2.Value;
+RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+RoiList.Current.EditCurve.CloseCurve = "1";
+
+//Interpolate
+RoiList.Current.InterpolateContours = "";
+
+RoiList.Current.Name = Store.At.tempName.String;
+
+Store.FreeAt.x1 = "";
+Store.FreeAt.x2 = "";
+Store.FreeAt.y1 = "";
+Store.FreeAt.y2 = "";
+Store.FreeAt.z1 = "";
+Store.FreeAt.z2 = "";
+
+Store.FreeAt.tempHeight = "";
+Store.FreeAt.tempWidth = "";
+Store.FreeAt.tempLength = "";
+Store.FreeAt.tempName = "";
+Store.FreeAt.ROIcentreX = "";
+Store.FreeAt.ROIcentreY = "";
+Store.FreeAt.ROIcentreZ = "";

@@ -1,0 +1,92 @@
+// Creates a cuboid ROI with the depth and dimensions entered
+// Requires a POI called WaterSurface and assumes a gantry angle of 0
+// Centre of the ROI is (Range - Modulation/2) cm posterior of the POI "WaterSurface"
+// Written by Jamil Lambert 25/09/2017
+
+//// Enter values here:       ////
+
+Store.FloatAt.tempRange = 40;      		//Range (Depth of distal end of cuboid)
+Store.FloatAt.tempModulation = 40; 		//Modulation (z dimension, patient AP)
+Store.FloatAt.tempWidth = 40;      		//Width (x dimension, Patient LR)
+Store.FloatAt.tempLength = 40;			//Length (y dimension, Patient SI)
+Store.StringAt.tempName = "External"; 	//Name of the ROI
+
+//// End of user input section ////
+
+
+IF.PoiList.#"!ContainsObject".WaterSurface.THEN.WarningMessage = "No WaterSurface POI. Place a POI on the phantom surface called \"WaterSurface\" and run the script again."; 
+
+//Else
+IF.PoiList.ContainsObject.WaterSurface.THEN ={
+	//Calculation of the corners of the ROI
+	Store.At.tempWidth.Divide = 2;
+	Store.At.tempLength.Divide = 2;	
+
+	Store.FloatAt.x1 = PoiList.#"WaterSurface".CurrXCoord;
+	Store.At.x1.Add = Store.At.tempWidth.Value;
+	Store.FloatAt.x2 = PoiList.#"WaterSurface".CurrXCoord;
+	Store.At.x2.Subtract = Store.At.tempWidth.Value;
+	
+	Store.FloatAt.y1 = PoiList.#"WaterSurface".CurrYCoord;
+	Store.At.y1.Subtract = Store.At.tempRange.Value;
+	Store.FloatAt.y2 = Store.At.y1.Value;
+	Store.At.y2.Add = Store.At.tempModulation.Value;
+
+	Store.FloatAt.z1 = PoiList.#"WaterSurface".CurrZCoord;
+	Store.At.z1.Add = Store.At.tempLength.Value;
+	Store.FloatAt.z2 = PoiList.#"WaterSurface".CurrZCoord;
+	Store.At.z2.Subtract = Store.At.tempLength.Value;
+
+
+	//Create ROI on slice at z1
+	CreateNewROI = "";
+	RoiList.Current.EditCurve.SliceCoordinate = Store.At.z1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.CloseCurve = "1";
+
+
+	//Create ROI on slice at z2
+	RoiList.Current.EditCurve.SliceCoordinate = Store.At.z2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.CloseCurve = "1";
+
+	//Interpolate
+	RoiList.Current.InterpolateContours = "";
+	
+	RoiList.Current.Name = Store.At.tempName.String;
+
+	Store.FreeAt.x1 = "";
+	Store.FreeAt.x2 = "";
+	Store.FreeAt.y1 = "";
+	Store.FreeAt.y2 = "";
+	Store.FreeAt.z1 = "";
+	Store.FreeAt.z2 = "";
+};
+
+Store.FreeAt.tempRange = "";
+Store.FreeAt.tempModulation = "";
+Store.FreeAt.tempWidth = "";
+Store.FreeAt.tempLength = "";
+Store.FreeAt.tempName = "";

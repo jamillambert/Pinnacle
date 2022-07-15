@@ -1,0 +1,6 @@
+//  Updates the view windows to the current trial. e.g. after a trial is created and Pinnacle does not update properly
+//  Jamil Lambert 17/11/2017
+
+ViewWindowList .Optimization2dView .TrialNonBEV = TrialList .Current .Name;
+ViewWindowList .IMRTLargeBEV .TrialNonBEV = TrialList .Current .Name;
+ViewWindowList .#"*" .UpdateCtSimWindowTrial = TrialList .Current.Name;

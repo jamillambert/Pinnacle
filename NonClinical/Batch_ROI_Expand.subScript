@@ -1,0 +1,44 @@
+//  Run by Batch_ROI_Expand.Script
+//  requires the variables to be set and freed there
+//  Jamil Lambert 17/11/2017
+
+// Store.FreeAt.CatchAllAskYesNo="";
+// Store.At.CatchAllAskYesNo = KeyDependency {
+  // KeyString = "Test.CatchAskYesNo";
+  // AddAction = "Test.CatchAskYesNo=1";
+  // AddAction = "Echo = AskYesNoPrompt";
+  // ExecuteActions = "";
+// };
+
+RoiList.#"*".ResetRoiExpandState = "";
+Store.StringAt.tempROIname = RoiList.Current.Name;
+
+IF.RoiList.ContainsObject.#"tempROI".THEN.RoiList.#"tempROI".Destroy = "";
+RoiList.Current.RoiExpandState = "Source";
+RoiExpandControl.TargetRoiName = "tempROI";
+RoiExpandControl.CreateNewTarget = 1;
+RoiExpandControl.ConstantPadding = 0;
+RoiExpandControl.UseConstantPadding = 1;
+RoiExpandControl.Expand = 1;
+RoiExpandControl.DoExpand = "";
+RoiList.#"*".ResetRoiExpandState = "";
+
+RoiList.#"tempROI".RoiExpandState = "Source";
+RoiExpandControl.CreateNewTarget = 0;
+RoiExpandControl.TargetRoi = Store.At.tempROIname.String;
+
+RoiExpandControl.NegXPadding = Store.At.negX.Value;
+RoiExpandControl.PosXPadding = Store.At.posX.Value;
+RoiExpandControl.NegYPadding = Store.At.negY.Value;
+RoiExpandControl.PosYPadding = Store.At.posY.Value;
+RoiExpandControl.NegZPadding = Store.At.negZ.Value;
+RoiExpandControl.PosZPadding = Store.At.posZ.Value;
+RoiExpandControl.UseConstantPadding = 0;
+RoiExpandControl.Expand = Store.At.expandOrContract.Value;
+RoiExpandControl.DoExpand = "";
+RoiList.#"*".ResetRoiExpandState = "";
+
+RoiList.#"tempROI".Destroy = "";
+
+Store.FreeAt.tempROIname = "";
+Store.FreeAt.CatchAllAskYesNo="";

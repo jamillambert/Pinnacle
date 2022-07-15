@@ -1,0 +1,7 @@
+Store.StringAt.tempMessage = "Plan path is: ";
+Store.At.tempMessage.AppendString = GetEnv.PATIENTS;
+Store.At.tempMessage.AppendString = "/\n";
+Store.At.tempMessage.AppendString = PatientDirectory;
+
+InfoMessage = Store.At.tempMessage.String;
+Store.FreeAt.tempMessage;

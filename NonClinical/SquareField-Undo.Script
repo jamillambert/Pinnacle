@@ -1,0 +1,18 @@
+// Deletes everything created by the last SquareField.Script run.  May crash or cause unexpected results if 
+// the SquareField.Script was not just run, i.e. no error checking or dependency checks are done.
+//
+// Jamil Lambert 12/10/2017
+
+Store.At.Stack = ObjectList {ChildClassName = "SimpleString"; };
+Store.At.Stack.CreateChildren = PluginManager.InversePlanningManager.CombinedObjectiveList.Count;
+Store.At.Stack.ChildrenEachCurrent.#"@".IF.PluginManager.InversePlanningManager.CombinedObjectiveList.HasElements.THEN.PluginManager.InversePlanningManager.DeleteCurrentObjective = "";
+Store.At.Stack.DestroyAllChildren = "";
+Store.FreeAt.Stack = "";
+PluginManager.PlanEvalPlugin.TrialList.#"*".Selected = 0;
+PluginManager.PlanEvalPlugin.ROIList.#"*".Selected = 0;	
+TrialList .Current .IsodoseNormPointName = "<None>";
+TrialList .Current .BeamList .DestroyAllChildren = "";
+TrialList .Current .PrescriptionList .Current .Destroy = "";
+PoiList .Last .Destroy = "";
+RoiList.Last.Destroy = "";
+RoiList.Last.Destroy = "";

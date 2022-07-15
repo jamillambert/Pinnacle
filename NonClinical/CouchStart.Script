@@ -1,0 +1,126 @@
+//WarningMessage = "This script is in Development for Version 9.8 Do not Use Clinically";
+
+IF.VolumeList.#"#0".IsVariableSpacing.THEN.WarningMessage = "****WARNING****@ @Variable slice spacing has been detected on the Primary Dataset@Please check for missing slices before proceeding@ @";
+
+
+WaitMessage = "Delete ROI Couch";
+IF.RoiList.ContainsObject.Couch .THEN.RoiList .Couch .MakeCurrent = 1;
+IF.RoiList.ContainsObject.Couch .THEN.CancelRoiEditing = "Delete Selected ROI   (Couch)";
+IF.RoiList.ContainsObject.Couch .THEN.RoiList .Couch .Destroy = "Delete Selected ROI   (Couch)";
+
+WaitMessage = "Delete ROI CouchIn";
+IF.RoiList.ContainsObject.CouchIn.THEN.RoiList .CouchIn .MakeCurrent = 1;
+IF.RoiList.ContainsObject.CouchIn.THEN.CancelRoiEditing = "Delete Selected ROI   (CouchIn)";
+IF.RoiList.ContainsObject.CouchIn.THEN.RoiList .CouchIn .Destroy = "Delete Selected ROI   (CouchIn)";
+
+//Add a temporary POI to find the centre of the scan/couch
+WaitMessage = "Setting the X Coord of Couch POI";
+ColorList .NextCurrent = "PoiList.Last.Color";
+
+//Find the Centre of the Scan
+CreateNewPOI = "Add Point";
+PoiList .Last .Color = ColorList .Current .Name;
+PoiList .Current .Name = "TEMPPOI";
+
+//Move the Couch POI to the Correct Position
+Store .FloatAt .ReqWidth = "-26.5";
+Store .At .ReqWidth .Add = PoiList .Last .XCoord;
+Store .FloatAt .ZERO = "0";
+IF.Store.FloatAt.ReqWidth.GREATERTHAN.Store.FloatAt.Zero.
+THEN.Store .At .ReqWidth .Negate = "";
+PoiList .TEMPPOI .Destroy = "";
+PoiList.Couch.XCoord = Store.FloatAt.ReqWidth;
+
+//What Version is it
+CreateNewPOI = "Add Point";
+PoiList .Last .Color = ColorList .Current .Name;
+PoiList .Current .Name = "TEMPPOI";
+WaitMessage = "Determine Current Pinnacle version";
+SavePlan = "Yes";
+Store.StringAt.PVersion = PoiList.Last.ObjectVersion.WriteVersion;
+//WarningMessage = PoiList.Last.ObjectVersion.WriteVersion;
+PoiList .TEMPPOI .Destroy = "";
+
+//Set the Location for the Roi File to be saved
+WaitMessage = "Determine File Locations";
+Store.StringAt.RoiFile = "/pinnacle_patient_expansion/NewPatients/";
+Store.At.RoiFile.AppendString = PlanInfo.PlanPath;
+Store.At.RoiFile.AppendString = "/";
+
+//set the string for loading the File
+Store.StringAt.LoadFile = Store.StringAt.RoiFile;
+Store.At.LoadFile.AppendString = "Couch.Load";
+
+
+
+//For V98 only, so set the Version Param to 3
+Store.StringAt.VersOption = 3;
+
+//Get the dataset Parameters
+WaitMessage = "Determine extents of the Scan";
+Store.FloatAt.ZStart = VolumeList.#"#0".Start.Z;
+Store.FloatAt.ZWidth = VolumeList.#"#0".VoxelSize.Z;
+Store.FloatAt.ZSlices = VolumeList.#"#0".Dimension.Z;
+Store.At.ZStart.Multiply = 100.0;
+Store.At.ZWidth.Multiply = 100.0;
+
+
+//Create the Python Command
+Store.StringAt.PyCom = "/usr/local/PinnacleSiteData/clinical/Scripts/_2016_Refresh/P14/Couch/DrawCouch.Py ";
+Store.At.PyCom.AppendString = Store.StringAt.RoiFile;
+Store.At.PyCom.AppendString = " ";
+Store.At.PyCom.AppendString = Store.StringAt.VersOption;
+Store.At.PyCom.AppendString = " ";
+Store.At.PyCom.AppendString = PoiList.Couch.XCoord;
+Store.At.PyCom.AppendString = " ";
+Store.At.PyCom.AppendString = PoiList.Couch.YCoord;
+Store.At.PyCom.AppendString = " ";
+Store.At.PyCom.AppendString = Store.FloatAt.ZStart;
+Store.At.PyCom.AppendString = " ";
+Store.At.PyCom.AppendString = Store.FloatAt.ZWidth;
+Store.At.PyCom.AppendString = " ";
+Store.At.PyCom.AppendString = Store.FloatAt.ZSlices;
+
+//execute the Python Script which creates the ROi Files
+WaitMessage = "Using Python to Calculate the ROI Files";
+SpawnCommand = Store.StringAt.PyCom;
+//Store.StringAt.TempTest = "dtfile -folder ";
+//WarningMessage = Store.StringAt.PyCom;
+
+// Import the Rois from the Created File
+WaitMessage = "Import the ROIS";
+RoiImportFileList .File = Store.StringAt.LoadFile;
+ImportRoi = "OK";
+
+//Set Override to On. Density is set by the Imported File
+WaitMessage = "Set Override to Onl";
+RoiList .Couch .OverrideDensity = 1 ;
+RoiList .CouchIn .OverrideDensity = 1 ;
+
+//Set the Couchh Removal Coord
+WaitMessage = "Set Couch Removal";
+// Set CouchRemovalYCoordinate 1mm Below bottom of ct couch
+Store .FloatAt .NewCouchRemoval = PoiList.Couch.YCoord;
+Store .At .NewCouchRemoval .Subtract = 5.1;
+//WarningMessage = Store .FloatAt .NewCouchRemoval;
+TrialList .#"*" .CouchRemovalYCoordinate = Store .FloatAt .NewCouchRemoval;
+TrialList .Current .RemoveCouchFromScan = 1;
+PoiList .Couch .Color = "grey";
+
+SavePlan = "Yes";
+
+
+WarningMessage = "Couch Contours Added@ @NB: You must check the override densities are active using the CTInfo Tool@Please report any failures to Pinnacle.Admin @location: P14_201606";
+
+
+Store .RemoveAt .NewCouchRemoval = "";
+Store .RemoveAt .ReqWidth = "";
+Store.RemoveAt .ZERO = "";
+Store.RemoveAt .VersOption = "";
+Store.RemoveAt .PVersion = "";
+Store.RemoveAt .ZSlices = "";
+Store.RemoveAt .ZWidth = "";
+Store.RemoveAt .ZStart = "";
+Store.RemoveAt .RoiFile = "";
+Store.RemoveAt .LoadFile= "";
+WaitMessageOff = "";

@@ -1,0 +1,74 @@
+// Runs a python script (DrawCouchVx.Py) to create a couch contour and then sets the couch removal plane
+// Requires a POI called Couch to be set at the top of the couch, at any x or z position
+// V2 Modified to - include a check for Couch POI before running
+//                - include an override of CT couch to 0 density (CT couch is larger than Linac couch)
+//                - removed unnecessary code
+// V3 - changed the geometry of the couch in the python script to have a skin thickness of 1.2 mm instead
+//      of 1.0 mm to fix a bug where the internal part would be overridden as air instead of 0.08
+//    - Tested with a few photon (VMAT) plans and there is no clinical difference in the dose distribution
+//
+// V1.0 by gbee
+// V2.0 by Jamil Lambert, 07 July 2017
+// V3 beta by Jamil Lambert, 14 July 2017
+//
+// Requires:
+//				DrawCouchV3.Py
+
+Store.StringAt.PyCom = "/home/jlambert/Scripts/DrawCouchV3.Py";
+	
+InfoMessage = "Version 3 Beta, couch geometry has been modified from original version";
+	
+IF.PoiList.#"!ContainsObject".Couch.THEN.WarningMessage = "No Couch POI, no contours were created, script exiting"; 
+//Else
+IF.PoiList.ContainsObject.Couch.THEN ={
+	IF.RoiList.ContainsObject.CouchCT.THEN.RoiList.CouchCT.Destroy = "";
+	IF.RoiList.ContainsObject.Couch.THEN.RoiList.Couch.Destroy = "";
+	IF.RoiList.ContainsObject.CouchIn.THEN.RoiList.CouchIn.Destroy = "";
+
+	//Set the location for the Roi File to be saved
+	Store.StringAt.RoiFile = "/home/jlambert/Scripts/";
+//	Store.StringAt.RoiFile = "/pinnacle_patient_expansion/NewPatients/";
+//	Store.At.RoiFile.AppendString = PlanInfo.PlanPath;
+//	Store.At.RoiFile.AppendString = "/";
+
+	//set up a string for the file name and path of the ROI File created by the Python script
+	Store.StringAt.LoadFile = Store.At.RoiFile.String;
+	Store.At.LoadFile.AppendString = "couchScriptROI.roi";
+
+	//Create the inputs for the Python Command and run it
+	Store.At.PyCom.AppendString = " ";
+	Store.At.PyCom.AppendString = Store.At.RoiFile.String;
+	Store.At.PyCom.AppendString = " ";
+	Store.At.PyCom.AppendString = -26.5;
+	Store.At.PyCom.AppendString = " ";
+	Store.At.PyCom.AppendString = PoiList.Couch.YCoord;
+	Store.At.PyCom.AppendString = " ";
+	Store.At.PyCom.AppendString = VolumeList.#"#0".Start.Z;
+	Store.At.PyCom.AppendString = " ";
+	Store.At.PyCom.AppendString = VolumeList.#"#0".VoxelSize.Z;
+	Store.At.PyCom.AppendString = " ";
+	Store.At.PyCom.AppendString = VolumeList.#"#0".Dimension.Z;
+	Store.At.PyCom.AppendString = " > ";
+	Store.At.PyCom.AppendString = Store.At.LoadFile.String;	
+	SpawnCommand = Store.At.PyCom.String;
+	
+	// Import the ROIs from the created file
+	RoiImportFileList.File = Store.At.LoadFile.String;
+	ImportRoi = "";
+	RoiList.CouchCT.Display2dWithMeshCheck = "Colorwash";
+
+	// Set couch removal y coordinate and turn on
+	Store.FloatAt.NewCouchRemoval = PoiList.Couch.YCoord;
+	Store.At.NewCouchRemoval.Subtract = 5.1;
+	TrialList.#"*".CouchRemovalYCoordinate = Store.At.NewCouchRemoval.Value;
+	TrialList.Current.RemoveCouchFromScan = 1;
+	PoiList.Couch.Color = "grey";
+	//SavePlan = "";
+
+	WarningMessage = "Couch Contours Added@ @NB: You must check the override densities are active using the CTInfo Tool@Please report any failures to Pinnacle.Admin @location: P14_201606";
+
+	Store.FreeAt.NewCouchRemoval = "";
+	Store.FreeAt.RoiFile = "";
+	Store.FreeAt.LoadFile= "";
+};
+Store.FreeAt.PyCom = "";

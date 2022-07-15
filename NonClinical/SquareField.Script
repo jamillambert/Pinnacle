@@ -1,0 +1,252 @@
+// Creates a cuboid ROI with the depth and dimensions entered
+// Creates a POI at a depth of Range - Modulation/2
+// Creates a proton beam with an Isocentre at the POI above and target of the ROI described above
+// Gantry angle and table angle are set to 0
+// Creates a prescription for 1 Gy to isocentre
+// Sets the field optimisation to IMPT and creates a uniform dose objective of 1 Gy to the ROI above
+//
+// Jamil Lambert 25/09/2017
+// Requires:
+//      "WaterSurface" POI at the phantom surface on the beam axis
+//      Assumes the patient is the QA water phantom with centre at (0, 0, 0)
+
+
+//// Enter values here:       ////
+Store.FloatAt.fieldRange = 10;      		//cm Range (Depth of distal end of cuboid target)
+Store.FloatAt.fieldModulation = 7; 		//cm Modulation (z dimension, patient AP)
+Store.StringAt.fieldName = "R20M10"; 	//Name of the ROI, POI, prescription and Beam
+Store.FloatAt.fieldWidth = 5;      	//cm ROI Width (x dimension, max FS 20cm, Patient LR)
+Store.FloatAt.fieldLength = 30;     //cm ROI Length (y dimension, max FS 24cm, Patient SI)
+Store.StringAt.fieldRS = "RS4cm";		//Range shifter ("None", or "RS4cm")
+Store.FloatAt.airGap = 10;				//cm Ignored if RS is none, the value is checked/adjusted further down to ensure the snout extension is not more than the maximum specified
+
+Store.FloatAt.xPosition = 0;			//cm centre of the ROI in beam x
+Store.FloatAt.yPosition = 0;			//cm centre of the ROI in beam y
+
+Store.StringAt.fieldMachineName = "iPOne004_RS";  //Beam model to use eg. "iPOne004"
+Store.FloatAt.maxExtension = 17; 		//Maximum snout extension allowed;
+Store.FloatAt.fieldProxMargin = 0;		//cm
+Store.FloatAt.fieldDistMargin = 0.7;	//cm
+Store.FloatAt.fieldLatMargin = 1.5;		//cm
+Store.FloatAt.fieldSpotSpacing = 0.8;	//cm
+Store.FloatAt.fieldLayerSpacing = 75;	//% (default is 80) 
+//// End of user input section ////
+
+
+
+IF.PoiList.#"!ContainsObject".WaterSurface.THEN.WarningMessage = "No WaterSurface POI. Place a POI on the phantom surface called \"WaterSurface\" and run the script again."; 
+//Else
+IF.PoiList.ContainsObject.WaterSurface.THEN ={
+	//Delete all objectives
+	Store.At.Stack = ObjectList {ChildClassName = "SimpleString"; };
+	Store.At.Stack.CreateChildren = PluginManager.InversePlanningManager.CombinedObjectiveList.Count;
+	Store.At.Stack.ChildrenEachCurrent.#"@".IF.PluginManager.InversePlanningManager.CombinedObjectiveList.HasElements.THEN.PluginManager.InversePlanningManager.DeleteCurrentObjective = "";
+	Store.At.Stack.DestroyAllChildren = "";
+	Store.FreeAt.Stack = "";
+	PluginManager.PlanEvalPlugin.TrialList.#"*".Selected = 0;
+	PluginManager.PlanEvalPlugin.ROIList.#"*".Selected = 0;	
+	PluginManager.PlanEvalPlugin.TrialList.Current.Selected = 1;
+	PluginManager.PlanEvalPlugin.TrialList.Current.LineType = "Medium Solid";
+	DVHPlotStyle .NormalizeX = 0;
+	
+	//Create the ROI
+	//Calculation of the corners of the ROI
+	Store.At.fieldWidth.Divide = 2;
+	Store.At.fieldLength.Divide = 2;	
+
+	Store.FloatAt.x1 = Store.At.fieldWidth.Value;
+	Store.At.x1.Add = Store.At.xPosition.Value;
+	
+	Store.At.fieldWidth.Negate = "";
+	Store.FloatAt.x2 = Store.At.fieldWidth.Value;
+	Store.At.x2.Add = Store.At.xPosition.Value;
+	
+	Store.FloatAt.y1 = PoiList.#"WaterSurface".CurrYCoord;
+	Store.At.y1.Subtract = Store.At.fieldRange.Value;
+	
+	Store.FloatAt.y2 = Store.At.y1.Value;
+	Store.At.y2.Add = Store.At.fieldModulation.Value;
+
+	Store.FloatAt.z1 = Store.At.fieldLength.Value;
+	Store.At.z1.Subtract = Store.At.yPosition.Value;
+	
+	Store.At.fieldLength.Negate = "";
+	Store.FloatAt.z2 = Store.At.fieldLength.Value;
+	Store.At.z2.Subtract = Store.At.yPosition.Value;
+
+	//Create ROI on slice at z1
+	CreateNewROI = "";
+	RoiList.Current.EditCurve.SliceCoordinate = Store.At.z1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.CloseCurve = "1";
+
+	//Create ROI on slice at z2
+	RoiList.Current.EditCurve.SliceCoordinate = Store.At.z2.Value;
+	RoiList.Current.EditCurve.DeleteAllPoints = "";
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y1.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x2.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.AddPointMakeCurrent = "";
+	RoiList.Current.EditCurve.CurrentValue.#0 = Store.At.x1.Value;
+	RoiList.Current.EditCurve.CurrentValue.#1 = Store.At.y2.Value;
+	RoiList.Current.EditCurve.CloseCurve = "1";
+
+	//Interpolate
+	RoiList.Current.InterpolateContours = "";
+	
+	//If a ROI already exists with the name entered above in fieldName then keep the default ROI name eg. ROI_1
+	Store.StringAt.tempCommand = "IF.RoiList.ContainsObject.";
+	Store.At.tempCommand.AppendString = Store.At.fieldName.String;
+	Store.At.tempCommand.AppendString = ".THEN.Store.StringAt.fieldName = ";
+	Store.At.tempCommand.AppendString = RoiList.Current.Name;
+	Store.At.tempCommand.Execute = 1;
+	RoiList.Current.Name = Store.At.fieldName.String;
+	PluginManager.PlanEvalPlugin.ROIList.Last.Selected = 1;	
+
+	//Create a ring ROI for optimizer
+	RoiList.#"*".ResetRoiExpandState = "";
+	RoiList.Current.RoiExpandState = "Source";
+	Store.StringAt.ringRoiName = Store.At.fieldName.String;
+	Store.At.ringRoiName.AppendString = "_Ring";
+	Store.StringAt.tempCommand = "IF.RoiList.ContainsObject.";
+	Store.At.tempCommand.AppendString = Store.At.ringRoiName.String;
+	Store.At.tempCommand.AppendString = ".THEN.RoiList.";
+	Store.At.tempCommand.AppendString = Store.At.ringRoiName.String;
+	Store.At.tempCommand.AppendString = ".Destroy";	
+	Store.At.tempCommand.Execute = 1;	
+	IF.RoiList.ContainsObject.#"External".THEN.RoiList.#"External".RoiExpandState = "Avoid Exterior";
+	RoiExpandControl.CreateNewTarget = 1;
+	RoiExpandControl.ConstantPadding = 2;
+	RoiExpandControl.UseConstantPadding = 1;
+	RoiExpandControl.TargetRoiName = Store.At.ringRoiName.String;
+	RoiExpandControl.DoRingExpansion = "";
+	PluginManager.PlanEvalPlugin.ROIList.Last.Selected = 1;	
+	
+	//Create the prescription, POI and beam
+	Store.FloatAt.fieldIsoDepth = Store.At.fieldModulation.Value;
+	Store.At.fieldIsoDepth.Divide = 2;
+	Store.At.fieldIsoDepth.Add = Store.At.y1.Value;
+	
+	CreateNewPOI = "";
+	Store.StringAt.fieldIsoName = Store.At.fieldName.String;
+	Store.At.fieldIsoName.AppendString =  " Iso";
+	PoiList.Current.Name = Store.At.fieldIsoName.String;
+	TrialList .Current .IsodoseNormPointName = Store.At.fieldIsoName.String;
+	
+	TrialList.Current.AddPrescription = "";
+	TrialList.Current.PrescriptionList.Current.PrescriptionDose = "100";
+	TrialList.Current.PrescriptionList.Current.NormalizationMethod = "Point Dose";
+	TrialList.Current.PrescriptionList.Current.PrescriptionPoint = Store.At.fieldIsoName.String;
+	TrialList.Current.PrescriptionList.Current.Name = Store.At.fieldName.String;
+	
+	CreateNewBeam = "";
+	TrialList.Current.BeamList.Current.Machine = Store.At.fieldMachineName.String;
+	TrialList.Current.BeamList.Current.ProtonManager.TargetROI = Store.At.fieldName.String;
+	TrialList.Current.BeamList.Current.Isocenter = PoiList.Current.Name;
+	TrialList.Current.BeamList.Current.Name = Store.At.fieldName.String;
+	
+	PoiList.Current.RelativeXCoord = 0;
+	PoiList.Current.RelativeYCoord = Store.At.fieldIsoDepth.Value;
+	PoiList.Current.RelativeZCoord = 0;
+	
+	//Set up the beam
+	TrialList.Current.BeamList.Current.ProtonManager.ProximalMargin = Store.At.fieldProxMargin.Value;
+	TrialList.Current.BeamList.Current.ProtonManager.DistalMargin = Store.At.fieldDistMargin.Value;
+	TrialList.Current.BeamList.Current.ProtonManager.RangeShifterName = Store.At.fieldRS.String;
+	TrialList.Current.BeamList.Current.ProtonManager.SpotParamLateralTargetMarginTop = Store.At.fieldLatMargin.Value;
+	TrialList.Current.BeamList.Current.ProtonManager.SpotParamSpotSpacingModeIsAuto = 0;
+	TrialList.Current.BeamList.Current.ProtonManager.SpotParamAutoComputeSpotRes = 0;
+	TrialList.Current.BeamList.Current.ProtonManager.SpotParamSpotSpacing = Store.At.fieldSpotSpacing.Value;
+	TrialList.Current.BeamList.Current.ProtonManager.SpotParamLayerOverlapPercent = Store.At.fieldLayerSpacing.Value;
+	//Check if air gap to too small and if it is set it to the minimum (i.e. max snout extension)
+	Store.FloatAt.snoutExtension = 0;
+	Store.At.snoutExtension.Subtract = Store.At.fieldModulation.Value;
+	Store.At.snoutExtension.Divide = 2;
+	Store.At.snoutExtension.Add = Store.At.fieldRange.Value;
+	Store.FloatAt.zero = 0;
+	Store.At.snoutExtension.Add = Store.At.airGap.Value;
+	Store.At.snoutExtension.Subtract = Store.At.maxExtension.Value;
+	Store.At.snoutExtension.Add = 3.65;
+	IF.Store.At.snoutExtension.Value.LESSTHAN.Store.At.zero.Value.THEN.Store.At.airGap.Subtract = Store.At.snoutExtension.Value;
+	Store.FreeAt.snoutExtension = "";
+	Store.FreeAt.zero = "";
+	//If there is a range shifter set the air gap to the value specified or the minimum if the specified value is too small
+	Store.StringAt.tempRS4cm = "RS4cm";
+	IF.Store.At.fieldRS.String.STRINGEQUALTO.Store.At.tempRS4cm.String.THEN.TrialList.Current.BeamList.Current.ProtonManager.AirGapAlongCentralAxis = Store.At.airGap.Value;
+	Store.FreeAt.tempRS4cm = "";
+	
+	//Set up the optimizer and add two objectives
+	TrialList.Current.BeamList.Current.Prescription = Store.At.fieldName.String;
+	TrialList.Current.BeamList.Current.IMRTParameterType = "IMPT";
+	PluginManager.InversePlanningManager.OptimizationManager.Current.TrialList.Current.MaxIterations = "100";
+	PluginManager.InversePlanningManager.AddObjective = "";
+	PluginManager.InversePlanningManager.CombinedObjectiveList.#"#0".ROIName = Store.At.fieldName.String;
+	PluginManager.InversePlanningManager.SetObjectiveType.#"#0" = "Uniform Dose";
+	PluginManager.InversePlanningManager.CombinedObjectiveList.#"#0".Dose = "100";
+	PluginManager.InversePlanningManager.CombinedObjectiveList.#"#0".Weight = " 1";
+	PluginManager.InversePlanningManager.AddObjective = "";
+	PluginManager.InversePlanningManager.CombinedObjectiveList.#"#1".ROIName = Store.At.fieldName.String;
+	PluginManager.InversePlanningManager.SetObjectiveType.#"#1" = "Max Dose";
+	PluginManager.InversePlanningManager.CombinedObjectiveList.#"#1".Dose = "102";
+	PluginManager.InversePlanningManager.CombinedObjectiveList.#"#1".Weight = " 100";
+	PluginManager.InversePlanningManager.AddObjective = "";
+	PluginManager.InversePlanningManager.CombinedObjectiveList.#"#2".ROIName = Store.At.ringRoiName.String;
+	PluginManager.InversePlanningManager.SetObjectiveType.#"#2" = "Max Dose";
+	PluginManager.InversePlanningManager.CombinedObjectiveList.#"#2".Dose = "99";
+	PluginManager.InversePlanningManager.CombinedObjectiveList.#"#2".Weight = " 100";
+		
+	//Set up the dose grid to cover the External with 1 mm resolution
+	TrialList.Current.DoseGrid.VoxelSize.X = 0.1;
+	TrialList.Current.DoseGrid.VoxelSize.Y = 0.1;
+	TrialList.Current.DoseGrid.VoxelSize.Z = 0.1;
+	IF.RoiList.ContainsObject.#"External".THEN = {
+		RoiList.Current = "External";
+		TrialList.Current.AutoCoverROI = "";
+	};
+	
+	Store.FreeAt.x1 = "";
+	Store.FreeAt.x2 = "";
+	Store.FreeAt.y1 = "";
+	Store.FreeAt.y2 = "";
+	Store.FreeAt.z1 = "";
+	Store.FreeAt.z2 = "";
+	Store.FreeAt.fieldIsoDepth = "";
+	Store.FreeAt.fieldIsoName = "";
+	Store.FreeAt.ringRoiName = "";
+	Store.FreeAt.tempCommand = "";
+	InfoMessage = "Script finished";
+};
+
+Store.FreeAt.fieldRange = "";
+Store.FreeAt.fieldModulation = "";
+Store.FreeAt.fieldWidth = "";
+Store.FreeAt.fieldLength = "";
+Store.FreeAt.fieldName = "";
+Store.FreeAt.fieldMachineName = "";
+Store.FreeAt.fieldRS = "";
+Store.FreeAt.fieldProxMargin = "";
+Store.FreeAt.fieldDistMargin = "";
+Store.FreeAt.fieldLatMargin = "";
+Store.FreeAt.fieldSpotSpacing = "";
+Store.FreeAt.fieldLayerSpacing = "";	
+Store.FreeAt.maxExtension.Value = "";
+Store.FreeAt.airGap = "";
+Store.FreeAt.xPosition = "";
+Store.FreeAt.yPosition = "";

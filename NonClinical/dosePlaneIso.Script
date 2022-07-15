@@ -1,0 +1,32 @@
+// A dose plane at isocentre is created for the current beam
+// Files are store as 'beamName'_'depth'_cm_depth.csv for ascii and .img for binary
+//
+
+Store.FloatAt.tempSPD = 230;
+
+Store.StringAt.tempFileName = ""; 
+Store.FloatAt.tempYes = 1;
+Store.At.tempFileName.AppendString = TrialList.Current.BeamList.Current.Name;
+Store.At.tempFileName.AppendString = "iso";
+IF.TrialList.Current.ExportPlanarDoseAscii.Value.EQUALTO.Store.At.tempYes.Value.THEN.Store.At.tempFileName.AppendString = ".csv";
+
+Test.ExpectAskYesNo = 1;
+Test.ExpectedAskYesNoReply = 1;
+
+IF.Store.At.tempDepth.Value.GREATERTHANOREQUALTO.Store.At.tempMinDepth.Value.THEN = {
+	TrialList.Current.AddPlanarDose = "";
+	TrialList.Current.PlanarDoseList.Last.MakeCurrent = "";
+	TrialList.Current.PlanarDoseList.Current.SetDataType = "Primary data";
+	TrialList.Current.PlanarDoseList.Current.SetDoseType = "Compute beam";
+	TrialList.Current.PlanarDoseList.Current.SetDoseType = "Sample trial";
+	TrialList.Current.PlanarDoseList.Current.VoxelSize = 0.1;
+	TrialList.Current.PlanarDoseList.Current.SourceToPlaneDistance = Store.At.tempSPD.Value;
+	TrialList.Current.ComputePlanarDose = TrialList.Current.PlanarDoseList.Current.Address;
+	TrialList.Current.PlanarDoseList.Current.ExportName = Store.At.tempFileName.String;
+	TrialList.Current.OutputCurrentPlanarDose = "";
+};
+
+Store.FreeAt.tempSPD = "";
+Store.FreeAt.tempFileName = "";
+Store.FreeAt.tempDepth = "";
+Store.FreeAt.tempYes = "";
