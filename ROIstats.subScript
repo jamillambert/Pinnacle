@@ -1,0 +1,12 @@
+Store.StringAt.tempROIstats = "printf \"";
+Store.At.tempROIstats.AppendString = RoiList.Current.Name;
+Store.At.tempROIstats.AppendString = ", ";
+Store.At.tempROIstats.AppendString = RoiList.Current.StatsVolumeName;
+Store.At.tempROIstats.AppendString = ", ";
+Store.At.tempROIstats.AppendString = RoiList.Current.Mean;
+Store.At.tempROIstats.AppendString = ", ";
+Store.At.tempROIstats.AppendString = RoiList.Current.StdDev;
+Store.At.tempROIstats.AppendString = "\n\" >> ";
+Store.At.tempROIstats.AppendString = Store.At.tempFileName.String;
+SpawnCommand = Store.At.tempROIstats.String;
+Store.FreeAt.tempROIstats = "";

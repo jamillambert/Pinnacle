@@ -1,0 +1,5 @@
+TrialList .Current .BeamList .#"#0" .Prescription = "050A1";
+TrialList .Current .BeamList .#"#1" .Prescription = "050B1";
+TrialList .Current .BeamList .#"#2" .Prescription = "010A1";
+TrialList .Current .BeamList .#"#3" .Prescription = "130A1";
+TrialList .Current .BeamList .#"#4" .Prescription = "135A1";

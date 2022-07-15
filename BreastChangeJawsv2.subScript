@@ -1,0 +1,50 @@
+//Increase Jaw position top and bottom by 1cm and front and back by 5mm
+// Requires the following variables to be set before being called:
+// Store.FloatAt.tempTopReduction = x;
+// Store.FloatAt.tempBottomReduction = x;
+// Store.FloatAt.tempLeftReduction = x;
+// Store.FloatAt.tempRightReduction = x;
+// Store.FloatAt.angleLimit = x;
+
+Store.FloatAt.validAngle = 1;
+
+Store.FloatAt.tempGantry = TrialList.Current.BeamList.Current.Gantry;
+Store.At.tempGantry.Subtract = 180;
+Store.At.tempGantry.Absolute = "";
+IF.Store.At.tempGantry.Value.LESSTHAN.Store.At.angleLimit.Value.THEN.Store.FloatAt.validAngle = 0;
+
+Store.FloatAt.tempGantry = TrialList.Current.BeamList.Current.Gantry;
+Store.At.tempGantry.Subtract = 360;
+Store.At.tempGantry.Absolute = "";
+IF.Store.At.tempGantry.Value.LESSTHAN.Store.At.angleLimit.Value.THEN.Store.FloatAt.validAngle = 0;
+
+Store.FloatAt.tempGantry = TrialList.Current.BeamList.Current.Gantry;
+Store.At.tempGantry.Subtract = 0;
+Store.At.tempGantry.Absolute = "";
+IF.Store.At.tempGantry.Value.LESSTHAN.Store.At.angleLimit.Value.THEN.Store.FloatAt.validAngle = 0;
+
+IF.Store.At.validAngle.Value.EQUALTO.#"1.0".THEN = {
+	Store.FloatAt.TempTopJaw = TrialList .Current .BeamList .Current .TopJawPosition;
+	Store.At.TempTopJaw.Add = Store.At.tempTopReduction.Value;
+	TrialList .Current .BeamList .Current .TopJawPosition = Store.FloatAt.TempTopJaw.Value;
+
+	Store.FloatAt.TempBottomJaw = TrialList .Current .BeamList .Current .BottomJawPosition;
+	Store.At.TempBottomJaw.Add = Store.At.tempBottomReduction.Value;
+	TrialList .Current .BeamList .Current .BottomJawPosition = Store.FloatAt.TempBottomJaw.Value;
+
+	Store.FloatAt.TempLeftJaw = TrialList .Current .BeamList .Current .LeftJawPosition;
+	Store.At.TempLeftJaw.Add = Store.At.tempLeftReduction.Value;
+	TrialList .Current .BeamList .Current .LeftJawPosition = Store.FloatAt.TempLeftJaw.Value;
+
+	Store.FloatAt.TempRightJaw = TrialList .Current .BeamList .Current .RightJawPosition;
+	Store.At.TempRightJaw.Add = Store.At.tempRightReduction.Value;
+	TrialList .Current .BeamList .Current .RightJawPosition = Store.FloatAt.TempRightJaw.Value;
+
+	Store.FreeAt.TempTopJaw = "";
+	Store.FreeAt.TempBottomJaw = "";
+	Store.FreeAt.TempRightJaw = "";
+	Store.FreeAt.TempLeftJaw = "";
+};
+
+Store.FreeAt.validAngle = "";
+Store.FreeAt.tempGantry = "";

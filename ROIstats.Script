@@ -1,0 +1,9 @@
+// Writes the mean HU and SD for all ROIs to the file specified below.  If the file exists the new data is appended to the end.
+// V1 Jamil Lambert Aug 2017
+// Requires:  "ROIstats.subScript"
+
+Store.StringAt.tempFileName = "/home/jlambert/Scripts/ROIstats.csv";
+RoiList.Current.RecomputeStatistics = "";
+RoiList.ChildrenEachCurrent.#"@".Script.ExecuteNow = "/home/jlambert/Scripts/ROIstats.subScript";
+Store.FreeAt.tempFileName = "";
+InfoMessage = "ROI Mean and SD written to /home/jlambert/Scripts/ROIstats.csv";
